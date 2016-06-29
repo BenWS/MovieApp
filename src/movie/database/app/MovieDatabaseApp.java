@@ -36,23 +36,6 @@ public class MovieDatabaseApp extends Application {
         
         stage.setScene(ul.scene);
         stage.show();
-        
-        boolean isUser;
-        
-        DatabaseConnection dbConn = new DatabaseConnection();
-        Connection conn = dbConn.getConnection();
-        Statement stmt = conn.createStatement();
-        
-        String validationQuery = "SELECT * FROM USERS WHERE USERNAME = '" + "BenS" + "' AND PASSWORD = " + "'" + "thisismypassword1" + "'";
-        ResultSet validationResults = stmt.executeQuery(validationQuery);
-        
-        if (validationResults.first()) {
-            isUser = true;
-        } else {
-            isUser = false;
-        };
-
-        stmt.close();
     }
 
     public static void main(String[] args) {
