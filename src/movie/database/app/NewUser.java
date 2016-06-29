@@ -5,7 +5,6 @@
 package movie.database.app;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
@@ -128,15 +127,7 @@ public class NewUser {
     }
     public void updateRecord(String username, String password) throws SQLException {
         
-        String myUserName = "java";
-        String myPassword = "";
-        String myDBMS = "mysql";
-        String myServerName = "localhost";
-        String myPortNumber = "3306";
-        String dbName = "myDatabase";
-        boolean result;
-        
-        DatabaseConnection dbConn = new DatabaseConnection(myUserName, myPassword, myDBMS,myServerName,myPortNumber,dbName);
+        DatabaseConnection dbConn = new DatabaseConnection();
         Connection conn = dbConn.getConnection();
         
         Statement stmt = null;
@@ -146,7 +137,8 @@ public class NewUser {
         
         try {
             stmt = conn.createStatement();
-            result  = stmt.execute(query);        } catch (SQLException e ) {
+            stmt.execute(query);
+        } catch (SQLException e ) {
             System.out.println(e);
         } finally {
             if (stmt != null) { stmt.close(); }

@@ -1,8 +1,9 @@
-//queries to be written
-//1. select to see whether username and password combo exist in database
-
 package movie.database.app;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -100,12 +101,18 @@ public class UserLogin {
             
             @Override
             public void handle(ActionEvent event) {
-                //verify username password entered exists in database
-                System.out.println("Verifying that User and Password Data exist in database");
                 
                 //if user exists in database
-                //bring user to menu screen
-                MovieDatabaseApp.stage.setScene(menuInput.scene);
+                
+                try {
+                    if (validatePassword()) {
+                        //bring user to menu screen
+                        MovieDatabaseApp.stage.setScene(menuInput.scene);
+                    } else {
+                        System.out.println("No User Found");
+                    }
+                } catch (SQLException e) {System.out.print(e);}
+                
                 
                 //clear text fields of data
                 username.setText("");
@@ -114,5 +121,27 @@ public class UserLogin {
         });
         
         
+    }
+    
+    public boolean validatePassword() throws SQLException {
+        
+        boolean isUser;
+        
+        DatabaseConnection dbConn = new DatabaseConnection();
+        Connection conn = dbConn.getConnection();
+        Statement stmt = conn.createStatement();
+        
+        String validationQuery = "SELECT * FROM USERS WHERE PASSWORD = '" + password.getText() + "' AND USERNAME = " + "'" +username.getText() + "'";
+        ResultSet validationResults = stmt.executeQuery(validationQuery);
+        
+        if (validationResults.first()) {
+            isUser = true;
+        } else {
+            isUser = false;
+        };
+
+        stmt.close();
+        
+        return isUser;
     }
 }

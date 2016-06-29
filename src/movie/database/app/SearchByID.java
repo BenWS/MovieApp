@@ -1,8 +1,9 @@
-//database queries
-
-
 package movie.database.app;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -23,6 +24,7 @@ public class SearchByID {
     Button menuButton;
     Button submitButton;
     
+    Text warning;
     TextField input_1;
     
     
@@ -44,10 +46,13 @@ public class SearchByID {
 
         //text nodes
         Text inputTitle = new Text(inputTitleString);
+        warning = new Text("Record Does Not Exist");
+        warning.setVisible(false);
 
         //adding nodes to inputGrid
         grid.add(inputTitle, 0, 0, 2, 1);
         grid.add(input_1, 0, 1);
+        grid.add(warning, 1, 1);
         grid.add(submitButton, 1, 1);
 
         //setting additional positional properties
@@ -57,6 +62,7 @@ public class SearchByID {
         //styling
         inputTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 16));
         inputTitle.setFill(Color.ORANGE);
+        warning.setFill(Color.RED);
         
         BorderPane menuButtonContainer = new BorderPane();
         menuButtonContainer.setPadding(new Insets(10,0,0,10));
@@ -87,19 +93,91 @@ public class SearchByID {
             @Override
             public void handle(javafx.event.ActionEvent event) {
                 
-                //populate the search results page w/ data from the database
-                System.out.println("Pulling Results from Database");
+                warning.setVisible(false);
                 
-                //setting 'check in' or 'check out' as the current button on search results
-                System.out.println("Checking whether copy is in stock or out of stock");
+                //create db connection
+                try {
+                    DatabaseConnection dbConn = new DatabaseConnection();
+                    Connection conn = dbConn.getConnection();
+                    Statement stmt = conn.createStatement();
+
+                    String movieDataQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + input_1.getText();
+
+                    ResultSet movieData = stmt.executeQuery(movieDataQuery);
+
+                    if (movieData.first()) {
+                        queryDB(searchResultsInput);
+                        MovieDatabaseApp.stage.setScene(searchResultsInput.scene);
+                    } else {
+                        warning.setVisible(true);
+                    }
+
+
+
+                    //clear text field for next use of page
+                    input_1.setText("");
                 
-                //send user to search results screen
-                MovieDatabaseApp.stage.setScene(searchResultsInput.scene);
-                
-                //clear text field from this page
-                input_1.setText("");
+                } catch (SQLException E) {System.out.println(E);}
                 
             }
         });
+    }
+    
+    //make updates to SearchResults Page after searching ID
+    public void queryDB (SearchResults searchResults) throws SQLException {
+        
+        DatabaseConnection dbConn = new DatabaseConnection();
+        Connection conn = dbConn.getConnection();
+        Statement stmt = conn.createStatement();
+        
+        int movieID = 0;
+        int movieCopyCount = 0;
+        int available = 0;
+        String director = "";
+        String title = "";
+        String releaseDate = "";
+
+        
+        int movieCopyID = Integer.parseInt(input_1.getText());
+
+        String movieIDQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + movieCopyID;
+        String movieDataQuery = "select title, director, releaseDate from movieApp.movies ";
+        String movieCopyCountQuery = "select count(*) AS Count from movieApp.movieCopy WHERE available = 1 AND movieID = " + movieID;
+        
+        ResultSet movieIDResults = stmt.executeQuery(movieIDQuery);
+        
+        while(movieIDResults.next()) {
+            movieID = movieIDResults.getInt("movieID");
+            available = movieIDResults.getInt("available");
+        }
+        
+        ResultSet movieDataResults = stmt.executeQuery(movieDataQuery);
+        
+        while(movieDataResults.next()) {
+            director = movieDataResults.getString("director");
+            title = movieDataResults.getString("title");
+            releaseDate = movieDataResults.getString("releaseDate");
+        }
+        
+        ResultSet copyCountResults = stmt.executeQuery(movieCopyCountQuery);
+        
+        while(copyCountResults.next()) {
+            movieCopyCount = copyCountResults.getInt("Count");
+        }
+        
+        stmt.close();
+        
+        searchResults.titleValue.setText(title);
+        searchResults.directorValue.setText(director);
+        searchResults.releaseDateValue.setText(releaseDate);
+        searchResults.noOfCopiesValue.setText(String.valueOf(movieCopyCount));
+        searchResults.movieCopyIDValue.setText(String.valueOf(movieCopyID));
+       
+        if (available == 1) {
+            searchResults.checkInOut.setText("Check Out");
+        } else if (available == 0) {
+            searchResults.checkInOut.setText("Check In");
+        }
+        
     }
 }

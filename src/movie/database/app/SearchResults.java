@@ -1,11 +1,9 @@
-//database queries
-//1. allow user to update movie record after clicking 'save'
-//2. select from movieCopy table to see whether available is set to true or false - render 'check in/out' button accordingly
-//3. 'check out' changes 'available' value from true to false in movieCopy table - same for check in
-//4. select from movie table to pull in data after user searches on SearchByID screen
-
 package movie.database.app;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -25,14 +23,18 @@ public class SearchResults {
     Button menuButton;
     Button edit;
     Button save;
-    Button checkOut;
-    Button checkIn;
+    Button checkInOut;
     Button backToSearch;
     
     TextField directorValueEdit;
     TextField releaseDateValueEdit;
+    
+    Text titleValue;
     Text directorValue;
     Text releaseDateValue;
+    Text noOfCopiesValue;
+    Text movieCopyIDValue;
+    
     boolean inEditMode = false;
     
     
@@ -40,7 +42,7 @@ public class SearchResults {
         
         grid = new GridPane();
         
-        Text title = new Text("Really, Really, Long Movie Title.");
+
 
         //Text Nodes
         Text director = new Text("Director:");
@@ -49,18 +51,19 @@ public class SearchResults {
         Text movieCopyID = new Text("Movie Copy ID:");
 
         //Corresponding values for the above Text Nodes
+        titleValue = new Text();
         directorValue = new Text();
         releaseDateValue = new Text();
-        Text noOfCopiesValue = new Text();
-        Text movieCopyIDValue = new Text();
+        noOfCopiesValue = new Text();
+        movieCopyIDValue = new Text();
+
         
         //for when user desires to edit the above text nodes
         directorValueEdit = new TextField();
         releaseDateValueEdit = new TextField();
 
 
-        checkOut = new Button("Check Out");
-        checkIn = new Button("Check In");
+        checkInOut = new Button("Check Out");
         backToSearch = new Button("Back");
         edit = new Button("Edit");
         save = new Button("Save");
@@ -73,7 +76,7 @@ public class SearchResults {
         PasswordField reenterPassword = new PasswordField();
 
         //adding elements to Grid
-        grid.add(title,0,0,2,1);
+        grid.add(titleValue,0,0,2,1);
         grid.add(director, 0, 1);
         grid.add(directorValue, 1, 1);
         grid.add(releaseDate, 0, 2);
@@ -82,12 +85,13 @@ public class SearchResults {
         grid.add(noOfCopiesValue,1,3);
         grid.add(movieCopyID,0,4);
         grid.add(movieCopyIDValue,1,4);
-        grid.add(checkOut,0,5);
+        grid.add(checkInOut,0,5);
         grid.add(backToSearch,1,5);
         grid.add(edit,0,6);
         
         //style
-        title.setFont(Font.font(14));
+        titleValue.setFont(Font.font(14));
+        
 
         //setting additional positional properties
         grid.setHgap(10);
@@ -148,8 +152,11 @@ public class SearchResults {
             public void handle(javafx.event.ActionEvent event) {
                 
                 //persisting data to database
-                System.out.println("Persisting: " + directorValueEdit.getText());
-                System.out.println("Persisting: " + releaseDateValueEdit.getText());
+                try {
+                    editRecords();
+                } catch (SQLException ex) {
+                    System.out.println(ex);
+                }
                 
                 //set the string value of the text to text field values
                 directorValue.setText(directorValueEdit.getText());
@@ -184,38 +191,59 @@ public class SearchResults {
             }
         });
         
-        //check out button
-        checkOut.setOnAction(new javafx.event.EventHandler<javafx.event.ActionEvent>() {
+        //checkInOut
+        checkInOut.setOnAction(new javafx.event.EventHandler<javafx.event.ActionEvent>() {
             
             @Override
             public void handle(javafx.event.ActionEvent event) {
                 
-                if (!inEditMode) {     
-                    //send user back to search page
-                    MovieDatabaseApp.stage.setScene(searchInput.scene);
+                if (!inEditMode) {
                     
-                    //updates database to make movie unavailable
-                    System.out.println("Database updated");
-                }
-                
-            }
-        });
-        
-        //check in button
-        checkIn.setOnAction(new javafx.event.EventHandler<javafx.event.ActionEvent>() {
-            
-            @Override
-            public void handle(javafx.event.ActionEvent event) {
-                
-                if (!inEditMode) {     
-                    //send user back to search page
-                    MovieDatabaseApp.stage.setScene(searchInput.scene);
-                    
-                    //updates database to make movie unavailable
-                    System.out.println("Database updated");
+                    try {
+                        //connecting to database
+                        DatabaseConnection dbConn = new DatabaseConnection();
+                        Connection conn = dbConn.getConnection();
+                        Statement stmt = conn.createStatement();
+
+                        //sql strings
+                        String checkOut = "UPDATE MOVIECOPY SET AVAILABLE = 0 WHERE MOVIECOPYID = " + movieCopyIDValue.getText();
+                        String checkIn = "UPDATE MOVIECOPY SET AVAILABLE = 1 WHERE MOVIECOPYID = " + movieCopyIDValue.getText();
+
+                        //update database depending on the current button text
+                        if (checkInOut.getText().equals("Check In")) {
+                            stmt.execute(checkIn);
+                            checkInOut.setText("Check Out");
+                            
+                        } else if (checkInOut.getText().equals("Check Out")) {
+                            stmt.execute(checkOut);
+                            checkInOut.setText("Check In");
+                        }
+                    } catch(SQLException e) {
+                        System.out.println(e);
+                    }
                 }
                 
             }
         });
     }
+    
+    public void editRecords() throws SQLException {
+        //create database connections
+        DatabaseConnection dbConn = new DatabaseConnection();
+        Connection conn = dbConn.getConnection();
+        Statement stmt = conn.createStatement();
+        
+        int movieID = 0;
+        String movieIDQuery = "SELECT MOVIEID FROM MOVIECOPY WHERE MOVIECOPYID = " + movieCopyIDValue.getText();
+        ResultSet movieIDResult = stmt.executeQuery(movieIDQuery);
+        
+        while(movieIDResult.next()) {
+            movieID = movieIDResult.getInt("movieID");
+        }
+        
+        String updateRecord = "UPDATE MOVIES SET DIRECTOR = '" + directorValueEdit.getText() + "' , RELEASEDATE = '" + releaseDateValueEdit.getText() + "' WHERE MOVIEID = " + movieID;
+        stmt.execute(updateRecord);
+    }
 }
+
+

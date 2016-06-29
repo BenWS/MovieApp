@@ -34,39 +34,25 @@ public class MovieDatabaseApp extends Application {
         sr.nextScreen(menu, sbid);
         ul.nextScreen(menu);
         
-        
-        stage.setScene(menu.scene);
+        stage.setScene(ul.scene);
         stage.show();
         
-        String myUserName = "java";
-        String myPassword = "";
-        String myDBMS = "mysql";
-        String myServerName = "localhost";
-        String myPortNumber = "3306";
-        String dbName = "myDatabase";
+        boolean isUser;
         
-        DatabaseConnection dbConn = new DatabaseConnection(myUserName, myPassword, myDBMS,myServerName,myPortNumber,dbName);
-        
+        DatabaseConnection dbConn = new DatabaseConnection();
         Connection conn = dbConn.getConnection();
+        Statement stmt = conn.createStatement();
         
-        Statement stmt = null;
-        String query = "select * from movies order by year limit 10 ";
-        String result = null;
+        String validationQuery = "SELECT * FROM USERS WHERE USERNAME = '" + "BenS" + "' AND PASSWORD = " + "'" + "thisismypassword1" + "'";
+        ResultSet validationResults = stmt.executeQuery(validationQuery);
         
-        try {
-        stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(query);
-        while (rs.next()) {
-            String title = rs.getString(1);
-            int year = rs.getInt(2);
-            System.out.println(title + "\t\t\t\t\t" + year);
-        }
-    } catch (SQLException e ) {
-        System.out.println(e);
-    } finally {
-        if (stmt != null) { stmt.close(); }
-    }
-    
+        if (validationResults.first()) {
+            isUser = true;
+        } else {
+            isUser = false;
+        };
+
+        stmt.close();
     }
 
     public static void main(String[] args) {
@@ -77,29 +63,12 @@ public class MovieDatabaseApp extends Application {
 
 class DatabaseConnection {
  
-    String userName;
-    String password;
-    String dbms;
-    String serverName;
-    String portNumber;
+    String userName = "java";
+    String password = "";
+    String dbms = "mysql";
+    String serverName = "localhost";
+    String portNumber = "3306";
     String dbName;
-    
-    public DatabaseConnection(
-            String userNameInput,
-            String passwordInput,
-            String dbmsInput, 
-            String serverNameInput, 
-            String portNumberInput, 
-            String dbNameInput) {
-        
-        dbms = dbmsInput;
-        serverName = serverNameInput;
-        portNumber = portNumberInput;
-        dbName = dbNameInput;
-        userName = userNameInput;
-        password = passwordInput;
-        
-    }
     
     public Connection getConnection() throws SQLException {
         

@@ -1,16 +1,16 @@
-//database queries
-//1. check to see whether new movie exists already
-//2. insert new movie record into database
-
 package movie.database.app;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -32,16 +32,16 @@ public class NewMovie {
     RadioButton newMovieRadio;
     RadioButton existingMovieRadio;
     
+    HashMap<String,Integer> listMapping;
     TextField movieTitle;
     ListView movieTitleCombo;
-    
+       
     boolean inEditMode;
     
     
-    public NewMovie() {
+    public NewMovie() throws SQLException {
         grid = new GridPane();
         
-        //initializing elements
         String titleString = "New Movie Copy";
         String newMovieRadioString = "New Movie";
         String existingMovieRadioString = "Existing Movie";
@@ -49,12 +49,12 @@ public class NewMovie {
         
         create = new Button(buttonText);
         
-        //Text nodes
+        
         HBox hbox = new HBox();
         Text title = new Text(titleString);
         
         
-        //defining radio buttons
+        
         ToggleGroup tg = new ToggleGroup();
         newMovieRadio = new RadioButton(newMovieRadioString);
         newMovieRadio.setToggleGroup(tg);
@@ -62,10 +62,23 @@ public class NewMovie {
         existingMovieRadio.setToggleGroup(tg);
         newMovieRadio.setSelected(true);
         
+        //running query to obtain the values for the array list
+        DatabaseConnection dbConn = new DatabaseConnection();
+        Connection conn = dbConn.getConnection();
+        Statement stmt = conn.createStatement();
+        
+        String getData = "SELECT movieID,title FROM movies";
+        
+        ResultSet rs = stmt.executeQuery(getData);
+        listMapping = new HashMap<String, Integer>();
+        
+        while (rs.next()) {
+            listMapping.put(rs.getString("title"), rs.getInt("movieID"));
+        }
+        
         //defining other fields
         movieTitle = new TextField();
-        movieTitleCombo = new ListView(FXCollections.observableArrayList("First", "Second", "Third",
-                "Fourth","Fifth","Sixth", "Seventh", "Eighth", "Ninth", "Tenth"));
+        movieTitleCombo = new ListView(FXCollections.observableArrayList(listMapping.keySet()));
         
         //style
         title.setFont(Font.font(18));
@@ -98,9 +111,7 @@ public class NewMovie {
         scene = new Scene(menuButtonContainer,460,270);
     }
     
-    public void nextScreen(Menu menuInput, NewMovieConfirmation newMovieConfirmationInput) {
-        //menu button returns user to menu screen
-        //menu button returns user to screen
+    public void nextScreen(Menu menuInput, NewMovieConfirmation nmcInput) {
         menuButton.setOnAction(new EventHandler<ActionEvent>() {
             
             @Override
@@ -130,20 +141,107 @@ public class NewMovie {
             @Override
             public void handle(ActionEvent event) {
                 
-                //pulling records from database
-                System.out.println("Creating New Record and Pulling Data from Database for Confirmation page");
+                try {
+                    updateRecords();
+                } catch (SQLException ex) {
+                    System.out.println(ex);
+                }
                 
-                //resetting fields
+                try {
+                    displayData(nmcInput);
+                } catch (SQLException ex) {
+                    System.out.println(ex);
+                }
+                
                 movieTitle.setText("");
                 movieTitleCombo.scrollTo(0);
-                
-                //setting new movie radio button to active
+
                 newMovieRadio.setSelected(true);
                 
-                //changing scene to new movie confirmation
-                MovieDatabaseApp.stage.setScene(newMovieConfirmationInput.scene);
+                MovieDatabaseApp.stage.setScene(nmcInput.scene);
             }
         });
         
+    }
+    
+    public void updateRecords() throws SQLException {
+
+        if (newMovieRadio.isSelected()) {
+            
+            int movieID = 0;
+            
+            DatabaseConnection dbConn = new DatabaseConnection();
+            Connection conn = dbConn.getConnection();
+            Statement stmt = conn.createStatement();
+            
+            
+            String movieInsert = "INSERT INTO movies (createDate, title) VALUES (now(),'" + this.movieTitle.getText() + "')";
+            stmt.execute(movieInsert);
+            
+
+            String getMovieID = "SELECT movieID FROM movies WHERE title = \'" + this.movieTitle.getText() + "\'";
+            ResultSet rs = stmt.executeQuery(getMovieID);
+
+            while(rs.next()) {
+                movieID = rs.getInt("movieID");
+            }
+            
+            String movieCopyInsert = "INSERT INTO movieCopy (createDate, available, movieID) VALUES (now(), 1," + movieID + ")";
+            
+            stmt.execute(movieCopyInsert);
+            stmt.close();
+ 
+        } else if(existingMovieRadio.isSelected()) {
+            DatabaseConnection dbConn = new DatabaseConnection();
+            Connection conn = dbConn.getConnection();
+            Statement stmt = conn.createStatement();
+            
+            String query = "INSERT INTO movieCopy (createDate, available, movieID) VALUES (now(), 1, " + listMapping.get(movieTitleCombo.getFocusModel().getFocusedItem()) + ")";
+
+            stmt.execute(query);
+            stmt.close();
+        }
+    }
+    
+    public void displayData(NewMovieConfirmation nmcInput) throws SQLException{
+        
+        //if new movie
+        if (newMovieRadio.isSelected()) {
+            
+            //establish SQLConnection
+            DatabaseConnection dbConn = new DatabaseConnection();
+            Connection conn = dbConn.getConnection();
+            Statement stmt = conn.createStatement();
+            
+            //get fields by movie title
+            String newMovieQuery = "select title, director, releaseDate from movies where title = \'" + movieTitle.getText() + "\'";
+            
+            //excecute query
+            ResultSet rs = stmt.executeQuery(newMovieQuery);
+            //update field on NewMovieConfirmation
+            while (rs.next()) {
+                nmcInput.titleValue.setText(rs.getString("title"));
+                nmcInput.directorValue.setText(rs.getString("director"));
+                nmcInput.releaseDateValue.setText(rs.getString("releaseDate"));
+            }
+        } else if (existingMovieRadio.isSelected()) {
+            
+            //establish SQLConnection
+            DatabaseConnection dbConn = new DatabaseConnection();
+            Connection conn = dbConn.getConnection();
+            Statement stmt = conn.createStatement();
+            
+            //get fields by movie title
+            String newMovieQuery = "select title, director, releaseDate from movies where movieID = " + listMapping.get(movieTitleCombo.getFocusModel().getFocusedItem());
+            
+            //excecute query
+            ResultSet rs = stmt.executeQuery(newMovieQuery);
+            //update field on NewMovieConfirmation
+            while (rs.next()) {
+                nmcInput.titleValue.setText(rs.getString("title"));
+                nmcInput.directorValue.setText(rs.getString("director"));
+                nmcInput.releaseDateValue.setText(rs.getString("releaseDate"));
+            }     
+        }
     }
 }

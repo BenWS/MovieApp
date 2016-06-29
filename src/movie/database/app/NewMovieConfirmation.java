@@ -1,9 +1,9 @@
-//database queries
-//1. pull movie record data for information display after user clicks create on Movie Creation page
-//2. allow user to update movie record after clicking 'save'
-
 package movie.database.app;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -22,6 +22,8 @@ public class NewMovieConfirmation {
     
     Text directorValue;
     Text releaseDateValue;
+    Text titleValue;
+    Text movieCopyIDValue;
     TextField directorValueEdit;
     TextField releaseDateValueEdit;
     
@@ -36,7 +38,7 @@ public class NewMovieConfirmation {
         
         grid = new GridPane();
         
-        Text title = new Text("Really, Really, Long Movie Title.");
+        titleValue = new Text("Really, Really, Long Movie Title.");
 
         //Text Nodes
         Text director = new Text("Director:");
@@ -48,7 +50,7 @@ public class NewMovieConfirmation {
         directorValue = new Text();
         releaseDateValue = new Text();
         Text noOfCopiesValue = new Text();
-        Text movieCopyIDValue = new Text();
+        movieCopyIDValue = new Text();
         
         directorValueEdit = new TextField();
         releaseDateValueEdit = new TextField();
@@ -65,7 +67,7 @@ public class NewMovieConfirmation {
         PasswordField reenterPassword = new PasswordField();
 
         //adding elements to Grid
-        grid.add(title,0,0,2,1);
+        grid.add(titleValue,0,0,2,1);
         grid.add(director, 0, 1);
         grid.add(directorValue, 1, 1);
         grid.add(releaseDate, 0, 2);
@@ -78,7 +80,7 @@ public class NewMovieConfirmation {
         grid.add(backToSearch,1,5);
         
         //style
-        title.setFont(Font.font(14));
+        titleValue.setFont(Font.font(14));
 
         //setting additional positional properties
         grid.setHgap(10);
@@ -137,6 +139,12 @@ public class NewMovieConfirmation {
             @Override
             public void handle(javafx.event.ActionEvent event) {
                 
+                try {
+                    editRecords();
+                } catch (SQLException ex) {
+                    System.out.println(ex);
+                }
+                
                 //persisting data to database
                 System.out.println("Persisting: " + directorValueEdit.getText());
                 System.out.println("Persisting: " + releaseDateValueEdit.getText());
@@ -171,5 +179,23 @@ public class NewMovieConfirmation {
                 }
             }
         });
+    }
+    
+    public void editRecords() throws SQLException {
+        //create database connections
+        DatabaseConnection dbConn = new DatabaseConnection();
+        Connection conn = dbConn.getConnection();
+        Statement stmt = conn.createStatement();
+        
+        int movieID = 0;
+        String movieIDQuery = "SELECT MOVIEID FROM MOVIECOPY WHERE MOVIECOPYID = " + movieCopyIDValue.getText();
+        ResultSet movieIDResult = stmt.executeQuery(movieIDQuery);
+        
+        while(movieIDResult.next()) {
+            movieID = movieIDResult.getInt("movieID");
+        }
+        
+        String updateRecord = "UPDATE MOVIES SET DIRECTOR = '" + directorValueEdit.getText() + "' , RELEASEDATE = '" + releaseDateValueEdit.getText() + "' WHERE MOVIEID = " + movieID;
+        stmt.execute(updateRecord);
     }
 }
