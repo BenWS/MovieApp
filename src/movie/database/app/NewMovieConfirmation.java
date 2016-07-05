@@ -8,7 +8,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -24,6 +23,7 @@ public class NewMovieConfirmation {
     Text releaseDateValue;
     Text titleValue;
     Text movieCopyIDValue;
+    Text noOfCopiesValue;
     TextField directorValueEdit;
     TextField releaseDateValueEdit;
     
@@ -40,31 +40,22 @@ public class NewMovieConfirmation {
         
         titleValue = new Text("Really, Really, Long Movie Title.");
 
-        //Text Nodes
         Text director = new Text("Director:");
         Text releaseDate = new Text("Release Date:");
         Text noOfCopies = new Text("# of Copies:");
         Text movieCopyID = new Text("Movie Copy ID:");
 
-        //Corresponding values for the above Text Nodes
         directorValue = new Text();
         releaseDateValue = new Text();
-        Text noOfCopiesValue = new Text();
+        noOfCopiesValue = new Text();
         movieCopyIDValue = new Text();
         
         directorValueEdit = new TextField();
         releaseDateValueEdit = new TextField();
         
-        backToSearch = new Button("Back to Search");
+        backToSearch = new Button("Back");
         edit = new Button("Edit");
         save = new Button("Save");
-        
-
-        
-        //Field nodes
-        TextField username = new TextField();
-        PasswordField password = new PasswordField();
-        PasswordField reenterPassword = new PasswordField();
 
         //adding elements to Grid
         grid.add(titleValue,0,0,2,1);
@@ -115,20 +106,17 @@ public class NewMovieConfirmation {
             
             @Override
             public void handle(javafx.event.ActionEvent event) {
-                //set the string value of the text fields to text values
+                
                 directorValueEdit.setText(directorValue.getText());
                 releaseDateValueEdit.setText(releaseDateValue.getText());
                 
-                //convert second column from text nodes to text field
                 grid.getChildren().removeAll(directorValue, releaseDateValue);
                 grid.add(directorValueEdit, 1, 1);
                 grid.add(releaseDateValueEdit, 1, 2);
                 
-                //change edit button to save button
                 grid.getChildren().remove(edit);
-                grid.add(save, 0, 6);
+                grid.add(save, 0, 5);
                 
-                //setting inEditMode to true - for preventing other click methods from executing
                 inEditMode = true;
                 
             }
@@ -145,24 +133,16 @@ public class NewMovieConfirmation {
                     System.out.println(ex);
                 }
                 
-                //persisting data to database
-                System.out.println("Persisting: " + directorValueEdit.getText());
-                System.out.println("Persisting: " + releaseDateValueEdit.getText());
-                
-                //set the string value of the text to text field values
                 directorValue.setText(directorValueEdit.getText());
                 releaseDateValue.setText(releaseDateValueEdit.getText());
                 
-                //convert second column from text field nodes to text nodes
                 grid.getChildren().removeAll(directorValueEdit, releaseDateValueEdit);
                 grid.add(directorValue, 1, 1);
                 grid.add(releaseDateValue, 1, 2);
                 
-                //change edit button to save button
                 grid.getChildren().remove(save);
-                grid.add(edit, 0, 6);
+                grid.add(edit, 0, 5);
                 
-                //setting inEditMode to true - for preventing other click methods from executing
                 inEditMode = false;
                 
             }
@@ -182,20 +162,22 @@ public class NewMovieConfirmation {
     }
     
     public void editRecords() throws SQLException {
-        //create database connections
+        
+        int movieID = 0;
+        
         DatabaseConnection dbConn = new DatabaseConnection();
         Connection conn = dbConn.getConnection();
         Statement stmt = conn.createStatement();
         
-        int movieID = 0;
+
         String movieIDQuery = "SELECT MOVIEID FROM MOVIECOPY WHERE MOVIECOPYID = " + movieCopyIDValue.getText();
         ResultSet movieIDResult = stmt.executeQuery(movieIDQuery);
-        
         while(movieIDResult.next()) {
             movieID = movieIDResult.getInt("movieID");
         }
         
         String updateRecord = "UPDATE MOVIES SET DIRECTOR = '" + directorValueEdit.getText() + "' , RELEASEDATE = '" + releaseDateValueEdit.getText() + "' WHERE MOVIEID = " + movieID;
+        
         stmt.execute(updateRecord);
     }
 }

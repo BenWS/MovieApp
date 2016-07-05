@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="5">
+        <file>
+            <url>src/movie/database/app/NewMovie.java</url>
+            <bookmark id="5">
+                <name/>
+                <line>205</line>
+                <key/>
+            </bookmark>
+        </file>
+    </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/ben/NetBeansProjects/Movie%20Database%20App/src/movie/database/app/projectNotes</file>
+            <file>file:/Users/ben/NetBeansProjects/Movie%20Database%20App/</file>
+            <file>file:/Users/ben/NetBeansProjects/Movie%20Database%20App/src/movie/database/app/notes</file>
+            <file>file:/Users/ben/NetBeansProjects/Movie%20Database%20App/src/movie/database/app/notesRecord</file>
         </group>
     </open-files>
 </project-private>

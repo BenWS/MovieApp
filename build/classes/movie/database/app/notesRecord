@@ -1,0 +1,38 @@
+7-2-16
+
+Current process
+
+1. Get Movie ID
+2. Get count of movies with that particular movie ID
+3. Provide that count to the New Movie Confirmation Page
+
+Need to retrieve Movie Copy ID immediately creating new record - how to do so?
+
+1. Find Java method that returns results of insert statement.
+2. Find SQL construct that returns the result of of an insert statement.
+3. Select the most recent Movie Copy record immediately after creating new record - last option.
+4. Override the auto-increment to get the Movie Copy ID BEFORE creating new record.
+5. Ask question on Stack Overflow.
+
+Hi,
+
+I'm creating an movie database application which allows the user to keep track of movie records.
+
+My database for the application has a two tables:
+
+Movies - For general information: Movie ID, movie title, director, movie release date
+MovieCopy - Specific information on each *copy* of the movie: Movie Copy ID, true/false availability field
+
+One part of the application allows the user to create a new movie *copy* record. The workflow goes like this:
+
+1. Get Movie ID from movie title/MovieID key-value mapping
+2. Insert new Movie *Copy* Record with that Movie ID
+
+When I'm performing the record insert, I would like to obtain the ID of the new Movie Copy record immediately after the insert is complete. I'm unsure of an accurate way to do this - what I've considered doing:
+
+1. Use Java method that returns results of insert statement - cannot find 
+2. Find SQL construct that returns the result of of an insert statement.
+3. Select the most recent Movie Copy record immediately after creating new record - last option.
+4. Override the auto-increment to get the Movie Copy ID BEFORE creating new record.
+
+EDIT: Found the answer in another Stack Overflow Question:

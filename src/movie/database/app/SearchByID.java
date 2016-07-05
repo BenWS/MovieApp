@@ -141,26 +141,22 @@ public class SearchByID {
         int movieCopyID = Integer.parseInt(input_1.getText());
 
         String movieIDQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + movieCopyID;
-        String movieDataQuery = "select title, director, releaseDate from movieApp.movies ";
-        String movieCopyCountQuery = "select count(*) AS Count from movieApp.movieCopy WHERE available = 1 AND movieID = " + movieID;
-        
         ResultSet movieIDResults = stmt.executeQuery(movieIDQuery);
-        
         while(movieIDResults.next()) {
             movieID = movieIDResults.getInt("movieID");
             available = movieIDResults.getInt("available");
         }
         
+        String movieDataQuery = "select title, director, releaseDate from movieApp.movies WHERE MOVIEID = " + movieID;
         ResultSet movieDataResults = stmt.executeQuery(movieDataQuery);
-        
         while(movieDataResults.next()) {
             director = movieDataResults.getString("director");
             title = movieDataResults.getString("title");
             releaseDate = movieDataResults.getString("releaseDate");
         }
         
+        String movieCopyCountQuery = "select count(*) AS Count from movieApp.movieCopy WHERE available = 1 AND movieID = " + movieID;
         ResultSet copyCountResults = stmt.executeQuery(movieCopyCountQuery);
-        
         while(copyCountResults.next()) {
             movieCopyCount = copyCountResults.getInt("Count");
         }

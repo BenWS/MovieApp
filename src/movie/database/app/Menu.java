@@ -1,5 +1,3 @@
-//all event actions created
-
 package movie.database.app;
 
 import javafx.geometry.Pos;
@@ -23,9 +21,7 @@ public class Menu {
         
         grid = new GridPane();
             
-        //initializing elements
         String titleString = "Menu";
-        
         String searchButtonText = "Search Movies";
         String newRecordButtonText = "New Record";
         String newUserButtonText = "New User";
@@ -35,21 +31,15 @@ public class Menu {
         newRecordButton = new Button(newRecordButtonText);
         newUserButton = new Button(newUserButtonText);
         
-        //text nodes
         Text title = new Text(titleString);
         
-        //style
         title.setFont(Font.font(18));
         
-        
-        
-        //adding elements to Grid
         grid.add(title,0,0,2,1);
         grid.add(searchButton, 0, 1);
         grid.add(newRecordButton, 1, 1);
         grid.add(newUserButton, 0, 2);
 
-        //setting additional positional properties
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setAlignment(Pos.CENTER);

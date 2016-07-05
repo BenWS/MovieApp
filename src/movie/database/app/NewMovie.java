@@ -1,9 +1,12 @@
+//DONE WITH CODE
+
 package movie.database.app;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import java.util.HashMap;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -38,8 +41,9 @@ public class NewMovie {
        
     boolean inEditMode;
     
-    
+    //construct page
     public NewMovie() throws SQLException {
+        
         grid = new GridPane();
         
         String titleString = "New Movie Copy";
@@ -47,63 +51,47 @@ public class NewMovie {
         String existingMovieRadioString = "Existing Movie";
         String buttonText = "Create";
         
-        create = new Button(buttonText);
-        
-        
-        HBox hbox = new HBox();
         Text title = new Text(titleString);
-        
-        
-        
         ToggleGroup tg = new ToggleGroup();
         newMovieRadio = new RadioButton(newMovieRadioString);
-        newMovieRadio.setToggleGroup(tg);
         existingMovieRadio = new RadioButton(existingMovieRadioString);
         existingMovieRadio.setToggleGroup(tg);
+        newMovieRadio.setToggleGroup(tg);
         newMovieRadio.setSelected(true);
+        create = new Button(buttonText);
         
-        //running query to obtain the values for the array list
+        HBox hbox = new HBox();
+        
         DatabaseConnection dbConn = new DatabaseConnection();
         Connection conn = dbConn.getConnection();
         Statement stmt = conn.createStatement();
-        
         String getData = "SELECT movieID,title FROM movies";
-        
         ResultSet rs = stmt.executeQuery(getData);
         listMapping = new HashMap<String, Integer>();
-        
         while (rs.next()) {
             listMapping.put(rs.getString("title"), rs.getInt("movieID"));
         }
         
-        //defining other fields
         movieTitle = new TextField();
         movieTitleCombo = new ListView(FXCollections.observableArrayList(listMapping.keySet()));
-        
-        //style
-        title.setFont(Font.font(18));
-        
-        
-        
-        //adding elements to Grid
+
         grid.add(title,0,0,2,1);
         grid.add(newMovieRadio, 0, 1);
         grid.add(existingMovieRadio, 1, 1);
         grid.add(movieTitle,0,2,2,1);
         
-        //adding hbox to Grid
         hbox.getChildren().add(create);
         grid.add(hbox, 1, 3);
         hbox.setAlignment(Pos.BOTTOM_RIGHT);
 
-        //setting additional positional properties
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setAlignment(Pos.CENTER);
         
+        title.setFont(Font.font(18));
+        
         BorderPane menuButtonContainer = new BorderPane();
         menuButtonContainer.setPadding(new Insets(10,0,0,10));
-        
         menuButton = new Button("Menu");
         menuButtonContainer.setCenter(this.grid);
         menuButtonContainer.setTop(menuButton);
@@ -112,6 +100,7 @@ public class NewMovie {
     }
     
     public void nextScreen(Menu menuInput, NewMovieConfirmation nmcInput) {
+        
         menuButton.setOnAction(new EventHandler<ActionEvent>() {
             
             @Override
@@ -136,107 +125,135 @@ public class NewMovie {
             }
         });
         
-        //create
         create.setOnAction(new EventHandler<ActionEvent> () {
             @Override
             public void handle(ActionEvent event) {
                 
-                try {
-                    updateRecords();
-                } catch (SQLException ex) {
-                    System.out.println(ex);
-                }
+                int movieCopyID = 0;
                 
                 try {
-                    displayData(nmcInput);
+                    movieCopyID = updateRecords();
+                    displayData(nmcInput, movieCopyID);
                 } catch (SQLException ex) {
                     System.out.println(ex);
                 }
                 
                 movieTitle.setText("");
-                movieTitleCombo.scrollTo(0);
-
-                newMovieRadio.setSelected(true);
+                movieTitleCombo.scrollTo(0);                   
                 
                 MovieDatabaseApp.stage.setScene(nmcInput.scene);
+                
+                if (existingMovieRadio.isSelected()) {
+                    grid.getChildren().remove(movieTitleCombo);
+                    grid.add(movieTitle, 0, 2, 2,1);
+                    newMovieRadio.setSelected(true);
+                }
             }
         });
         
     }
     
-    public void updateRecords() throws SQLException {
+    //update datbase records with new movie and/or movie copy data
+    public int updateRecords() throws SQLException {
 
+        int movieCopyID = 0;
+        
         if (newMovieRadio.isSelected()) {
-            
-            int movieID = 0;
+                 
+            int movieID = 0;   
             
             DatabaseConnection dbConn = new DatabaseConnection();
             Connection conn = dbConn.getConnection();
             Statement stmt = conn.createStatement();
             
-            
             String movieInsert = "INSERT INTO movies (createDate, title) VALUES (now(),'" + this.movieTitle.getText() + "')";
-            stmt.execute(movieInsert);
-            
+            stmt.execute(movieInsert);           
 
             String getMovieID = "SELECT movieID FROM movies WHERE title = \'" + this.movieTitle.getText() + "\'";
             ResultSet rs = stmt.executeQuery(getMovieID);
-
             while(rs.next()) {
                 movieID = rs.getInt("movieID");
             }
             
             String movieCopyInsert = "INSERT INTO movieCopy (createDate, available, movieID) VALUES (now(), 1," + movieID + ")";
+            stmt.execute(movieCopyInsert, RETURN_GENERATED_KEYS);
+            ResultSet movieCopyIDResult = stmt.getGeneratedKeys();
+            while(movieCopyIDResult.next()) {
+                movieCopyID = movieCopyIDResult.getInt(1);
+            }
             
-            stmt.execute(movieCopyInsert);
             stmt.close();
  
         } else if(existingMovieRadio.isSelected()) {
+            
             DatabaseConnection dbConn = new DatabaseConnection();
             Connection conn = dbConn.getConnection();
             Statement stmt = conn.createStatement();
             
             String query = "INSERT INTO movieCopy (createDate, available, movieID) VALUES (now(), 1, " + listMapping.get(movieTitleCombo.getFocusModel().getFocusedItem()) + ")";
-
-            stmt.execute(query);
+            stmt.execute(query, RETURN_GENERATED_KEYS);
+            ResultSet movieCopyIDResult = stmt.getGeneratedKeys();
+            while(movieCopyIDResult.next()) {
+                movieCopyID = movieCopyIDResult.getInt(1);
+            }                       
+            
             stmt.close();
         }
+        return movieCopyID;
     }
     
-    public void displayData(NewMovieConfirmation nmcInput) throws SQLException{
-        
-        //if new movie
+    //display data on next page after creating movie
+    public void displayData(NewMovieConfirmation nmcInput, int movieCopyIDInput) throws SQLException{
+
         if (newMovieRadio.isSelected()) {
             
-            //establish SQLConnection
+            int movieID = 0;
+            int count = 0;
+            
+            nmcInput.movieCopyIDValue.setText(String.valueOf(movieCopyIDInput));
+            
             DatabaseConnection dbConn = new DatabaseConnection();
             Connection conn = dbConn.getConnection();
             Statement stmt = conn.createStatement();
-            
-            //get fields by movie title
-            String newMovieQuery = "select title, director, releaseDate from movies where title = \'" + movieTitle.getText() + "\'";
-            
-            //excecute query
-            ResultSet rs = stmt.executeQuery(newMovieQuery);
-            //update field on NewMovieConfirmation
-            while (rs.next()) {
-                nmcInput.titleValue.setText(rs.getString("title"));
-                nmcInput.directorValue.setText(rs.getString("director"));
-                nmcInput.releaseDateValue.setText(rs.getString("releaseDate"));
+
+            String getMovieID = "SELECT movieID FROM movies WHERE title = \'" + this.movieTitle.getText() + "\'";
+            ResultSet movieIDResults = stmt.executeQuery(getMovieID);
+            while(movieIDResults.next()) {
+                movieID = movieIDResults.getInt("movieID");
             }
+            
+            String movieCountQuery = "SELECT COUNT(*) AS COUNT FROM MOVIECOPY WHERE MOVIEID = " + movieID;
+            ResultSet countResults = stmt.executeQuery(movieCountQuery);
+            while(countResults.next()) {
+                nmcInput.noOfCopiesValue.setText(String.valueOf(countResults.getInt("COUNT")));
+            }
+            
+            String newMovieQuery = "select title, director, releaseDate from movies where title = '" + movieTitle.getText() + "'";
+            ResultSet newMovieQueryResults = stmt.executeQuery(newMovieQuery);
+            while (newMovieQueryResults.next()) {
+                nmcInput.titleValue.setText(newMovieQueryResults.getString("title"));
+                nmcInput.directorValue.setText(newMovieQueryResults.getString("director"));
+                nmcInput.releaseDateValue.setText(newMovieQueryResults.getString("releaseDate"));
+            }
+            
         } else if (existingMovieRadio.isSelected()) {
             
-            //establish SQLConnection
+            int movieID = 0;
+            
+            nmcInput.movieCopyIDValue.setText(String.valueOf(movieCopyIDInput));
+            
             DatabaseConnection dbConn = new DatabaseConnection();
             Connection conn = dbConn.getConnection();
             Statement stmt = conn.createStatement();
             
-            //get fields by movie title
+            String movieCountQuery = "SELECT COUNT(*) AS COUNT FROM MOVIECOPY WHERE MOVIEID = " + listMapping.get(movieTitleCombo.getFocusModel().getFocusedItem());
+            ResultSet countResults = stmt.executeQuery(movieCountQuery);
+            while(countResults.next()) {
+                nmcInput.noOfCopiesValue.setText(String.valueOf(countResults.getInt("COUNT")));
+            }
+
             String newMovieQuery = "select title, director, releaseDate from movies where movieID = " + listMapping.get(movieTitleCombo.getFocusModel().getFocusedItem());
-            
-            //excecute query
             ResultSet rs = stmt.executeQuery(newMovieQuery);
-            //update field on NewMovieConfirmation
             while (rs.next()) {
                 nmcInput.titleValue.setText(rs.getString("title"));
                 nmcInput.directorValue.setText(rs.getString("director"));

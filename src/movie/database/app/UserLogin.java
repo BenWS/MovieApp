@@ -17,17 +17,19 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.event.EventHandler;
 import javafx.event.ActionEvent;
+import javafx.scene.paint.Color;
 
 public class UserLogin {
     
     GridPane grid;
     Scene scene;
     
-    Button menuButton;
     Button submit;
     
     TextField username;
     PasswordField password;
+    
+    Text warning;
     
     public UserLogin() {
         
@@ -51,8 +53,12 @@ public class UserLogin {
         username = new TextField();
         password = new PasswordField();
         
+        warning = new Text("Invalid Credentials");
+        warning.setVisible(false);
+        
         //style
         title.setFont(Font.font(18));
+        warning.setFill(Color.RED);
         
         
         
@@ -62,6 +68,7 @@ public class UserLogin {
         grid.add(username, 1, 1);
         grid.add(passwordLabel, 0, 2);
         grid.add(password, 1, 2);
+        grid.add(warning, 0, 3);
         
         //adding hbox to Grid
         hbox.getChildren().add(submit);
@@ -73,48 +80,27 @@ public class UserLogin {
         grid.setVgap(10);
         grid.setAlignment(Pos.CENTER);
         
-        BorderPane menuButtonContainer = new BorderPane();
-        menuButtonContainer.setPadding(new Insets(10,0,0,10));
-        
-        menuButton = new Button("Menu");
-        menuButtonContainer.setCenter(this.grid);
-        menuButtonContainer.setTop(menuButton);
-        
-        scene = new Scene(menuButtonContainer,460,270);
+        scene = new Scene(this.grid,460,270);
         
 
     }
     
     public void nextScreen(Menu menuInput) {
         
-        //menu button returns user to menu screen
-        menuButton.setOnAction(new EventHandler<ActionEvent>() {
-            
-            @Override
-            public void handle(ActionEvent event) {
-                MovieDatabaseApp.stage.setScene(menuInput.scene);
-            }
-        });
-        
-        //submit button
         submit.setOnAction(new EventHandler<ActionEvent>() {
             
             @Override
             public void handle(ActionEvent event) {
                 
-                //if user exists in database
-                
                 try {
                     if (validatePassword()) {
-                        //bring user to menu screen
                         MovieDatabaseApp.stage.setScene(menuInput.scene);
+                        warning.setVisible(false);
                     } else {
-                        System.out.println("No User Found");
+                        warning.setVisible(true);
                     }
                 } catch (SQLException e) {System.out.print(e);}
                 
-                
-                //clear text fields of data
                 username.setText("");
                 password.setText("");
             }

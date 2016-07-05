@@ -2,9 +2,7 @@ package movie.database.app;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Properties;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -79,5 +77,3 @@ class DatabaseConnection {
         return conn;
     }
 }
-
-

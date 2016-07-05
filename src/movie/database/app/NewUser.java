@@ -1,14 +1,8 @@
-//database queries for class
-//1. insert new user record - DONE
-//2. check database to check whether user currently exists
-
 package movie.database.app;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
@@ -32,6 +27,8 @@ public class NewUser {
     TextField reenterPassword;
     TextField password;
     TextField username;
+    
+    Text warning;
     
     public NewUser() {
         grid = new GridPane();
@@ -57,8 +54,12 @@ public class NewUser {
         password = new PasswordField();
         reenterPassword = new PasswordField();
         
+        warning = new Text("Password Must Match");
+        warning.setVisible(false);
+        
         //style
         title.setFont(Font.font(18));
+        warning.setFill(Color.RED);
         
         
         
@@ -70,6 +71,7 @@ public class NewUser {
         grid.add(password, 1, 2);
         grid.add(reenterPasswordLabel,0,3);
         grid.add(reenterPassword,1,3);
+        grid.add(warning, 0, 4);
         
         //adding hbox to Grid
         hbox.getChildren().add(submit);
@@ -99,6 +101,7 @@ public class NewUser {
             @Override
             public void handle(javafx.event.ActionEvent event) {
                 MovieDatabaseApp.stage.setScene(menuInput.scene);
+                warning.setVisible(false);
             }
         });
         
@@ -111,17 +114,20 @@ public class NewUser {
                 //verify passwords match
                 if (password.getText().equals(reenterPassword.getText())) {
                     
-                    //Returns user to menu
+                    warning.setVisible(false);
                     MovieDatabaseApp.stage.setScene(menuInput.scene);
                     
-                    //create new user in database
                     System.out.println("Creating new user in database");
                     try {
                         updateRecord(username.getText(), password.getText());
                     } catch (SQLException ex) {
-                        Logger.getLogger(NewUser.class.getName()).log(Level.SEVERE, null, ex);
+                        System.out.println(ex);
                     }
-                }
+                } else {warning.setVisible(true);}
+                
+                username.setText("");
+                password.setText("");
+                reenterPassword.setText("");
             }
         });
     }
@@ -133,7 +139,6 @@ public class NewUser {
         Statement stmt = null;
         String query = "INSERT INTO USERS (username,password, createDate) "
                 + "VALUES('" + username + "','" + password + "',now()) ";
-        System.out.println(query);
         
         try {
             stmt = conn.createStatement();
@@ -141,7 +146,7 @@ public class NewUser {
         } catch (SQLException e ) {
             System.out.println(e);
         } finally {
-            if (stmt != null) { stmt.close(); }
+            if (stmt != null) {stmt.close();}
         }
     }
 }
