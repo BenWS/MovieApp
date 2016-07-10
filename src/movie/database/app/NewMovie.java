@@ -1,5 +1,3 @@
-//DONE WITH CODE
-
 package movie.database.app;
 
 import java.sql.Connection;
@@ -40,8 +38,7 @@ public class NewMovie {
     ListView movieTitleCombo;
        
     boolean inEditMode;
-    
-    //construct page
+
     public NewMovie() throws SQLException {
         
         grid = new GridPane();
@@ -52,13 +49,14 @@ public class NewMovie {
         String buttonText = "Create";
         
         Text title = new Text(titleString);
+        create = new Button(buttonText);
+        
         ToggleGroup tg = new ToggleGroup();
         newMovieRadio = new RadioButton(newMovieRadioString);
         existingMovieRadio = new RadioButton(existingMovieRadioString);
         existingMovieRadio.setToggleGroup(tg);
         newMovieRadio.setToggleGroup(tg);
         newMovieRadio.setSelected(true);
-        create = new Button(buttonText);
         
         HBox hbox = new HBox();
         
@@ -153,7 +151,6 @@ public class NewMovie {
         
     }
     
-    //update datbase records with new movie and/or movie copy data
     public int updateRecords() throws SQLException {
 
         int movieCopyID = 0;
@@ -201,8 +198,7 @@ public class NewMovie {
         }
         return movieCopyID;
     }
-    
-    //display data on next page after creating movie
+
     public void displayData(NewMovieConfirmation nmcInput, int movieCopyIDInput) throws SQLException{
 
         if (newMovieRadio.isSelected()) {

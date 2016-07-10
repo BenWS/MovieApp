@@ -33,7 +33,6 @@ public class NewUser {
     public NewUser() {
         grid = new GridPane();
         
-        //initializing elements
         String titleString = "Please Provide the Following";
         String usernameString = "Username";
         String passwordString = "Password";
@@ -42,14 +41,13 @@ public class NewUser {
         
         submit = new Button(buttonText);
         
-        //Text nodes
-        HBox hbox = new HBox();
         Text title = new Text(titleString);
         Text usernameLabel = new Text(usernameString);
         Text passwordLabel = new Text(passwordString);
         Text reenterPasswordLabel = new Text(reenterPasswordString);
         
-        //Field nodes
+        HBox hbox = new HBox();
+        
         username = new TextField();
         password = new PasswordField();
         reenterPassword = new PasswordField();
@@ -57,13 +55,6 @@ public class NewUser {
         warning = new Text("Password Must Match");
         warning.setVisible(false);
         
-        //style
-        title.setFont(Font.font(18));
-        warning.setFill(Color.RED);
-        
-        
-        
-        //adding elements to Grid
         grid.add(title,0,0,2,1);
         grid.add(usernameLabel, 0, 1);
         grid.add(username, 1, 1);
@@ -73,12 +64,13 @@ public class NewUser {
         grid.add(reenterPassword,1,3);
         grid.add(warning, 0, 4);
         
-        //adding hbox to Grid
         hbox.getChildren().add(submit);
         grid.add(hbox, 1, 4);
         hbox.setAlignment(Pos.BOTTOM_RIGHT);
+        
+        title.setFont(Font.font(18));
+        warning.setFill(Color.RED);
 
-        //setting additional positional properties
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setAlignment(Pos.CENTER);
@@ -94,8 +86,7 @@ public class NewUser {
     }
     
     public void nextScreen(Menu menuInput) {
-        //menu button takes user back to menu
-        //menu button
+
         menuButton.setOnAction(new javafx.event.EventHandler<javafx.event.ActionEvent>() {
             
             @Override
@@ -105,24 +96,23 @@ public class NewUser {
             }
         });
         
-        //submit button
         submit.setOnAction(new javafx.event.EventHandler<javafx.event.ActionEvent>() {
             
             @Override
             public void handle(javafx.event.ActionEvent event) {
                 
-                //verify passwords match
                 if (password.getText().equals(reenterPassword.getText())) {
                     
                     warning.setVisible(false);
+                    
                     MovieDatabaseApp.stage.setScene(menuInput.scene);
                     
-                    System.out.println("Creating new user in database");
                     try {
                         updateRecord(username.getText(), password.getText());
                     } catch (SQLException ex) {
                         System.out.println(ex);
                     }
+                    
                 } else {warning.setVisible(true);}
                 
                 username.setText("");

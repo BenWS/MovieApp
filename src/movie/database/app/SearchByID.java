@@ -25,41 +25,32 @@ public class SearchByID {
     Button submitButton;
     
     Text warning;
-    TextField input_1;
+    TextField searchInput;
     
     
     public SearchByID() {
         
-        //initializing grid
         grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
 
-        //text strings for field labels
         String inputTitleString = "Please Enter Movie ID";
         String buttonText = "Search";
 
-        //text field nodes
-        input_1 = new TextField();
+        searchInput = new TextField();
 
-        //button node
         submitButton = new Button(buttonText);
 
-        //text nodes
         Text inputTitle = new Text(inputTitleString);
         warning = new Text("Record Does Not Exist");
         warning.setVisible(false);
 
-        //adding nodes to inputGrid
         grid.add(inputTitle, 0, 0, 2, 1);
-        grid.add(input_1, 0, 1);
+        grid.add(searchInput, 0, 1);
         grid.add(warning, 1, 1);
         grid.add(submitButton, 1, 1);
-
-        //setting additional positional properties
         grid.setHgap(10);
         grid.setVgap(10);
 
-        //styling
         inputTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 16));
         inputTitle.setFill(Color.ORANGE);
         warning.setFill(Color.RED);
@@ -77,7 +68,6 @@ public class SearchByID {
     
     public void nextScreen (Menu menuInput, SearchResults searchResultsInput) {
         
-        //menu button returns user to screen
         menuButton.setOnAction(new javafx.event.EventHandler<javafx.event.ActionEvent>() {
             
             @Override
@@ -85,8 +75,6 @@ public class SearchByID {
                 MovieDatabaseApp.stage.setScene(menuInput.scene);
             }
         });
-
-        //submit button
         
         submitButton.setOnAction(new javafx.event.EventHandler<javafx.event.ActionEvent>() {
             
@@ -95,13 +83,12 @@ public class SearchByID {
                 
                 warning.setVisible(false);
                 
-                //create db connection
                 try {
                     DatabaseConnection dbConn = new DatabaseConnection();
                     Connection conn = dbConn.getConnection();
                     Statement stmt = conn.createStatement();
 
-                    String movieDataQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + input_1.getText();
+                    String movieDataQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + searchInput.getText();
 
                     ResultSet movieData = stmt.executeQuery(movieDataQuery);
 
@@ -111,11 +98,8 @@ public class SearchByID {
                     } else {
                         warning.setVisible(true);
                     }
-
-
-
-                    //clear text field for next use of page
-                    input_1.setText("");
+                    
+                    searchInput.setText("");
                 
                 } catch (SQLException E) {System.out.println(E);}
                 
@@ -123,7 +107,6 @@ public class SearchByID {
         });
     }
     
-    //make updates to SearchResults Page after searching ID
     public void queryDB (SearchResults searchResults) throws SQLException {
         
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -138,8 +121,7 @@ public class SearchByID {
         String releaseDate = "";
 
         
-        int movieCopyID = Integer.parseInt(input_1.getText());
-
+        int movieCopyID = Integer.parseInt(searchInput.getText());
         String movieIDQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + movieCopyID;
         ResultSet movieIDResults = stmt.executeQuery(movieIDQuery);
         while(movieIDResults.next()) {
