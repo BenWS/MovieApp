@@ -17,13 +17,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ToggleGroup;
 
 public class NewMovie {
+    
+    NodeFormatter nf = new NodeFormatter();
     
     GridPane grid;
     Scene scene;
@@ -72,6 +73,7 @@ public class NewMovie {
         
         movieTitle = new TextField();
         movieTitleCombo = new ListView(FXCollections.observableArrayList(listMapping.keySet()));
+        movieTitleCombo.setMaxHeight(200);
 
         grid.add(title,0,0,2,1);
         grid.add(newMovieRadio, 0, 1);
@@ -86,15 +88,27 @@ public class NewMovie {
         grid.setVgap(10);
         grid.setAlignment(Pos.CENTER);
         
-        title.setFont(Font.font(18));
-        
         BorderPane menuButtonContainer = new BorderPane();
         menuButtonContainer.setPadding(new Insets(10,0,0,10));
         menuButton = new Button("Menu");
         menuButtonContainer.setCenter(this.grid);
         menuButtonContainer.setTop(menuButton);
         
-        scene = new Scene(menuButtonContainer,460,270);
+        Text[] textNodes = {};
+        TextField[] textFieldNodes = {};
+        Button[] buttons = {menuButton, create};
+        RadioButton[] radioButtons = {existingMovieRadio, newMovieRadio};
+        
+        nf.formatNodes(
+                title, 
+                textNodes, 
+                textFieldNodes, 
+                radioButtons, 
+                buttons);
+        
+
+        
+        scene = new Scene(menuButtonContainer,460,375);
     }
     
     public void nextScreen(Menu menuInput, NewMovieConfirmation nmcInput) {
@@ -227,7 +241,7 @@ public class NewMovie {
             String newMovieQuery = "select title, director, releaseDate from movies where title = '" + movieTitle.getText() + "'";
             ResultSet newMovieQueryResults = stmt.executeQuery(newMovieQuery);
             while (newMovieQueryResults.next()) {
-                nmcInput.titleValue.setText(newMovieQueryResults.getString("title"));
+                nmcInput.title.setText(newMovieQueryResults.getString("title"));
                 nmcInput.directorValue.setText(newMovieQueryResults.getString("director"));
                 nmcInput.releaseDateValue.setText(newMovieQueryResults.getString("releaseDate"));
             }
@@ -251,7 +265,7 @@ public class NewMovie {
             String newMovieQuery = "select title, director, releaseDate from movies where movieID = " + listMapping.get(movieTitleCombo.getFocusModel().getFocusedItem());
             ResultSet rs = stmt.executeQuery(newMovieQuery);
             while (rs.next()) {
-                nmcInput.titleValue.setText(rs.getString("title"));
+                nmcInput.title.setText(rs.getString("title"));
                 nmcInput.directorValue.setText(rs.getString("director"));
                 nmcInput.releaseDateValue.setText(rs.getString("releaseDate"));
             }     

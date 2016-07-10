@@ -11,13 +11,15 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.event.EventHandler;
 import javafx.event.ActionEvent;
+import javafx.scene.control.RadioButton;
 import javafx.scene.paint.Color;
 
 public class UserLogin {
+    
+    NodeFormatter nf = new NodeFormatter();
     
     GridPane grid;
     Scene scene;
@@ -48,9 +50,20 @@ public class UserLogin {
         username = new TextField();
         password = new PasswordField();
         
+        Text[] textNodes = {usernameLabel, passwordLabel};
+        TextField[] textFieldNodes = {username, password};
+        Button[] buttons = {submit};
+        RadioButton[] radioButtons = {};
+        
+        nf.formatNodes(
+                title, 
+                textNodes, 
+                textFieldNodes, 
+                radioButtons, 
+                buttons);
+        
         warning = new Text("Invalid Credentials");
         warning.setVisible(false);
-        title.setFont(Font.font(18));
         warning.setFill(Color.RED);
         
         grid.add(title,0,0,2,1);

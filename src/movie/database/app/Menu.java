@@ -3,12 +3,14 @@ package movie.database.app;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 public class Menu {
     
+    NodeFormatter nf = new NodeFormatter();
 
     Scene scene;
     GridPane grid;
@@ -33,7 +35,17 @@ public class Menu {
         
         Text title = new Text(titleString);
         
-        title.setFont(Font.font(18));
+        Text[] textNodes = {};
+        TextField[] textFieldNodes = {};
+        Button[] buttons = {searchButton, newRecordButton, newUserButton};
+        RadioButton[] radioButtons = {};
+        
+        nf.formatNodes(
+                title, 
+                textNodes, 
+                textFieldNodes, 
+                radioButtons, 
+                buttons);
         
         grid.add(title,0,0,2,1);
         grid.add(searchButton, 0, 1);

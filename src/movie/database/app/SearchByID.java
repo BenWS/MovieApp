@@ -8,15 +8,16 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 public class SearchByID {
+    
+    NodeFormatter nf = new NodeFormatter();
     
     Scene scene;
     GridPane grid;
@@ -25,7 +26,7 @@ public class SearchByID {
     Button submitButton;
     
     Text warning;
-    TextField searchInput;
+    TextField search;
     
     
     public SearchByID() {
@@ -33,36 +34,45 @@ public class SearchByID {
         grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
 
-        String inputTitleString = "Please Enter Movie ID";
+        String titleString = "Please Enter Movie ID";
         String buttonText = "Search";
 
-        searchInput = new TextField();
+        search = new TextField();
 
         submitButton = new Button(buttonText);
 
-        Text inputTitle = new Text(inputTitleString);
+        Text title = new Text(titleString);
         warning = new Text("Record Does Not Exist");
         warning.setVisible(false);
 
-        grid.add(inputTitle, 0, 0, 2, 1);
-        grid.add(searchInput, 0, 1);
-        grid.add(warning, 1, 1);
+        grid.add(title, 0, 0, 2, 1);
+        grid.add(search, 0, 1);
         grid.add(submitButton, 1, 1);
+        grid.add(warning, 2, 1);
         grid.setHgap(10);
         grid.setVgap(10);
-
-        inputTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 16));
-        inputTitle.setFill(Color.ORANGE);
-        warning.setFill(Color.RED);
         
         BorderPane menuButtonContainer = new BorderPane();
         menuButtonContainer.setPadding(new Insets(10,0,0,10));
-        
         menuButton = new Button("Menu");
         menuButtonContainer.setCenter(this.grid);
         menuButtonContainer.setTop(menuButton);
+
+        Text[] textNodes = {};
+        TextField[] textFieldNodes = {search};
+        Button[] buttons = {submitButton, menuButton};
+        RadioButton[] radioButtons = {};
         
-        scene = new Scene(menuButtonContainer,460,220);
+        nf.formatNodes(
+                title, 
+                textNodes, 
+                textFieldNodes, 
+                radioButtons, 
+                buttons);
+        
+        warning.setFill(Color.RED);
+        
+        scene = new Scene(menuButtonContainer,500,220);
     
     }
     
@@ -88,7 +98,7 @@ public class SearchByID {
                     Connection conn = dbConn.getConnection();
                     Statement stmt = conn.createStatement();
 
-                    String movieDataQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + searchInput.getText();
+                    String movieDataQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + search.getText();
 
                     ResultSet movieData = stmt.executeQuery(movieDataQuery);
 
@@ -99,7 +109,7 @@ public class SearchByID {
                         warning.setVisible(true);
                     }
                     
-                    searchInput.setText("");
+                    search.setText("");
                 
                 } catch (SQLException E) {System.out.println(E);}
                 
@@ -121,7 +131,7 @@ public class SearchByID {
         String releaseDate = "";
 
         
-        int movieCopyID = Integer.parseInt(searchInput.getText());
+        int movieCopyID = Integer.parseInt(search.getText());
         String movieIDQuery = "select movieID, available from movieApp.movieCopy where movieCopyID = " + movieCopyID;
         ResultSet movieIDResults = stmt.executeQuery(movieIDQuery);
         while(movieIDResults.next()) {
@@ -145,7 +155,7 @@ public class SearchByID {
         
         stmt.close();
         
-        searchResults.titleValue.setText(title);
+        searchResults.title.setText(title);
         searchResults.directorValue.setText(director);
         searchResults.releaseDateValue.setText(releaseDate);
         searchResults.noOfCopiesValue.setText(String.valueOf(movieCopyCount));

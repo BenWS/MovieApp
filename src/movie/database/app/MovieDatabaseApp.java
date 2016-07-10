@@ -5,6 +5,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 import javafx.application.Application;
+import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 
@@ -12,7 +18,6 @@ public class MovieDatabaseApp extends Application {
     
     public static Stage stage = new Stage();
     
-    //event handlers for menu page
     @Override
     public void start(Stage primaryStage) throws SQLException {
         
@@ -75,5 +80,32 @@ class DatabaseConnection {
         
         System.out.println("Connected to database");
         return conn;
+    }
+}
+
+class NodeFormatter {
+    public void formatNodes(
+            Text titleInput, 
+            Text[] textNodeInput, 
+            TextField[] textFieldInput,
+            RadioButton[] radioButtonInput,
+            Button[] buttonInput) {
+        
+        titleInput.setFont(Font.font(18));
+        titleInput.setFill(Color.ORANGERED);
+        
+        for (int i =0;i < textNodeInput.length;i++) {
+            textNodeInput[i].setFont(Font.font(14));
+            textNodeInput[i].setFill(Color.BLACK);
+        }
+        
+        for (int i =0;i < textFieldInput.length;i++) {
+            textFieldInput[i].setFont(Font.font(14));
+        }
+        
+        for (int i =0;i < buttonInput.length;i++) {
+            buttonInput[i].setFont(Font.font(14));
+        }
+        
     }
 }

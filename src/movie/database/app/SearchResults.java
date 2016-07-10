@@ -9,13 +9,15 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 public class SearchResults {
+    
+    NodeFormatter nf = new NodeFormatter();
     
     GridPane grid;
     Scene scene;
@@ -29,7 +31,7 @@ public class SearchResults {
     TextField directorValueEdit;
     TextField releaseDateValueEdit;
     
-    Text titleValue;
+    Text title;
     Text directorValue;
     Text releaseDateValue;
     Text noOfCopiesValue;
@@ -47,7 +49,7 @@ public class SearchResults {
         Text noOfCopies = new Text("# of Copies:");
         Text movieCopyID = new Text("Movie Copy ID:");
 
-        titleValue = new Text();
+        title = new Text();
         directorValue = new Text();
         releaseDateValue = new Text();
         noOfCopiesValue = new Text();
@@ -65,7 +67,7 @@ public class SearchResults {
         PasswordField password = new PasswordField();
         PasswordField reenterPassword = new PasswordField();
         
-        grid.add(titleValue,0,0,2,1);
+        grid.add(title,0,0,2,1);
         grid.add(director, 0, 1);
         grid.add(directorValue, 1, 1);
         grid.add(releaseDate, 0, 2);
@@ -78,19 +80,32 @@ public class SearchResults {
         grid.add(backToSearch,1,5);
         grid.add(edit,0,6);
         
-        titleValue.setFont(Font.font(14));
-        
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setAlignment(Pos.CENTER);
-        
         BorderPane menuButtonContainer = new BorderPane();
         menuButtonContainer.setPadding(new Insets(10,0,0,10));
         menuButton = new Button("Menu");
         menuButtonContainer.setCenter(this.grid);
         menuButtonContainer.setTop(menuButton);
         
-        scene = new Scene(menuButtonContainer,340,270);
+        Text[] textNodes = {
+            director,releaseDate, noOfCopies, movieCopyID,
+            directorValue, releaseDateValue,noOfCopiesValue, movieCopyIDValue
+        };
+        TextField[] textFieldNodes = {directorValueEdit, releaseDateValueEdit};
+        Button[] buttons = {backToSearch, edit, save, menuButton, checkInOut};
+        RadioButton[] radioButtons = {};
+        
+        nf.formatNodes(
+                title, 
+                textNodes, 
+                textFieldNodes, 
+                radioButtons, 
+                buttons);
+        
+        grid.setHgap(20);
+        grid.setVgap(20);
+        grid.setAlignment(Pos.CENTER);
+        
+        scene = new Scene(menuButtonContainer,500,350);
     }
     
     public void nextScreen(Menu menuInput, SearchByID searchInput) {
